@@ -1,5 +1,6 @@
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Analytics;
 
 [DisallowMultipleComponent]
 public class PersistableObject : MonoBehaviour
@@ -17,6 +18,9 @@ public class PersistableObject : MonoBehaviour
         transform.localRotation = reader.ReadQuaternion();
         transform.localScale = reader.ReadVector3();
     }
+
+ 
+
 }
 
 
