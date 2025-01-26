@@ -47,8 +47,9 @@ public class Shape : PersistableObject
         }
 
         sharedPropertyBlock.SetColor(colorPropertyId, color);
-      //  meshRenderer.SetPropertyBlock(sharedPropertyBlock);   
-       meshRenderer.material.color = color;
+        // meshRenderer.SetPropertyBlock(sharedPropertyBlock);   
+       
+        meshRenderer.material.color = color;
     }
 
     public override void Save(GameDataWriter writer)
