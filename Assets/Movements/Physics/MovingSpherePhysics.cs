@@ -15,9 +15,16 @@ public class MovingSpherePhysics : MonoBehaviour
     [SerializeField, Range(0f, 10f)]
     float jumpHeight = 2f;
 
+    [SerializeField, Range(0, 5)]
+    int maxAirJumps = 0;
+
+    [SerializeField, Range(0f, 100f)]
+    float maxAirAcceleration = 1f;
+
     Vector3 velocity, desiredVelocity;
     bool desiredJump;
     bool onGround;
+    int jumpPhase;
 
     private void Awake()
     {
@@ -36,11 +43,10 @@ public class MovingSpherePhysics : MonoBehaviour
 
     private void FixedUpdate()
     {
-        
+        UpdateState();
 
-
-        velocity = body.velocity;
-        float maxSpeedChange = maxAcceleration * Time.deltaTime;
+        float acceleration = onGround ? maxAcceleration : maxAirAcceleration;
+        float maxSpeedChange = acceleration * Time.deltaTime;
         velocity.x = Mathf.MoveTowards(velocity.x, desiredVelocity.x, maxSpeedChange);
         velocity.z = Mathf.MoveTowards(velocity.z, desiredVelocity.z, maxSpeedChange);
 
@@ -48,37 +54,61 @@ public class MovingSpherePhysics : MonoBehaviour
         {
             desiredJump = false;
             Jump();
-            
+
         }
 
         body.velocity = velocity;
         onGround = false;
     }
 
+    private void UpdateState()
+    {
+        velocity = body.velocity;
+        if (onGround)
+        {
+            jumpPhase = 0;
+        }
+    }
+
     void Jump()
     {
-        if(onGround)
+        if(onGround || jumpPhase < maxAirJumps)
         {
-            velocity.y += Mathf.Sqrt(-2f * Physics.gravity.y * jumpHeight);
+            jumpPhase += 1;
+            float jumpSpeed = Mathf.Sqrt(-2f * Physics.gravity.y * jumpHeight);
+            if(velocity.y > 0f)
+            {
+                jumpSpeed = Mathf.Max(jumpSpeed - velocity.y, 0f);
+            }
+            velocity.y += jumpSpeed;
         }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        onGround = true;
+       EvaluateCollision(collision);
     }
 
     private void OnCollisionExit(Collision collision)
     {
-        onGround = false;
+        EvaluateCollision(collision);
     }
 
     private void OnCollisionStay(Collision collision)
     {
-        onGround = true;
+        EvaluateCollision(collision);
     }
 
+    void EvaluateCollision (Collision collision)
+    {
+        for(int i = 0; i < collision.contactCount; i++)
+        {
+            Vector3 normal = collision.GetContact(i).normal;
+            onGround |= normal.y > 0.9f;
+        }
+    }
 
+    
 }
 
 
